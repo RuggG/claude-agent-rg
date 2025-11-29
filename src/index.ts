@@ -89,8 +89,10 @@ app.post("/chat", async (req: Request, res: Response) => {
     res.write(`data: ${JSON.stringify({ type: "done", sessionId: sdkSessionId || sessionId })}\n\n`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error("[Agent Error]", errorMessage, errorStack);
     res.write(
-      `data: ${JSON.stringify({ type: "error", error: errorMessage, sessionId: sdkSessionId || sessionId })}\n\n`
+      `data: ${JSON.stringify({ type: "error", error: errorMessage, stack: errorStack, sessionId: sdkSessionId || sessionId })}\n\n`
     );
   } finally {
     res.end();
