@@ -1,5 +1,12 @@
 FROM node:20-slim
 
+# Install required tools for Claude Agent SDK (git, ripgrep for Grep tool, curl)
+RUN apt-get update && apt-get install -y \
+    git \
+    ripgrep \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy package files
