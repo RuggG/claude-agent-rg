@@ -28,6 +28,7 @@ RUN npm prune --production
 # Set environment
 ENV NODE_ENV=production
 ENV PORT=10000
+ENV HOME=/app
 
 EXPOSE 10000
 
