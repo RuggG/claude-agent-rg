@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const ChatRequestSchema = z.object({
-  sessionId: z.string().uuid().optional(),
+  sessionId: z.string().nullish(), // accepts string, null, or undefined
   message: z.string().min(1),
 });
 

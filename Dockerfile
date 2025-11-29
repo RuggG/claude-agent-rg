@@ -20,9 +20,9 @@ RUN npm prune --production
 
 # Set environment
 ENV NODE_ENV=production
+ENV PORT=10000
 
-# Expose port (Render uses PORT env var)
-EXPOSE 3000
+EXPOSE 10000
 
-# Start the server
+# Start the server (runs as root, requires allowDangerouslySkipPermissions in code)
 CMD ["node", "dist/index.js"]

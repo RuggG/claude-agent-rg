@@ -11,6 +11,7 @@ export interface AgentOptions {
   model?: string;
   maxTurns?: number;
   cwd?: string;
+  sessionId?: string; // Resume from previous session
 }
 
 const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant that can read and write files, run commands, search the web, and help with various tasks. Be concise and efficient.`;
@@ -39,10 +40,17 @@ export async function* runAgent(
   const agentOptions: Options = {
     systemPrompt: options.systemPrompt || DEFAULT_SYSTEM_PROMPT,
     permissionMode: "bypassPermissions",
+    allowDangerouslySkipPermissions: true, // Required for Docker deployments
     mcpServers: Object.keys(mcpServers).length > 0 ? mcpServers : undefined,
     model: options.model,
-    maxTurns: options.maxTurns,
+    maxTurns: options.maxTurns || 30,
+    maxBudgetUsd: 5.0, // Cost guardrail
+    includePartialMessages: true, // Enable real-time token streaming
     cwd: options.cwd || process.cwd(),
+    resume: options.sessionId, // Resume from previous session if provided
+    stderr: (data: string) => {
+      console.error(`[SDK stderr] ${data.trim()}`);
+    },
   };
 
   const queryResult = query({ prompt, options: agentOptions });

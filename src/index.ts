@@ -55,35 +55,42 @@ app.post("/chat", async (req: Request, res: Response) => {
   }
 
   const { sessionId, message } = parseResult.data;
-  const session = getOrCreateSession(sessionId);
 
   // Set SSE headers
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
-  res.setHeader("X-Session-Id", session.id);
+
+  // Track the SDK's session_id for resumption
+  let sdkSessionId: string | null = null;
 
   try {
-    for await (const sdkMessage of runAgent(message)) {
+    for await (const sdkMessage of runAgent(message, { sessionId: sessionId || undefined })) {
+      // Capture SDK session_id from init message
+      if (sdkMessage.type === "system" && "subtype" in sdkMessage && sdkMessage.subtype === "init") {
+        sdkSessionId = sdkMessage.session_id;
+        res.setHeader("X-Session-Id", sdkSessionId);
+      }
+
       const event = {
         type: sdkMessage.type,
         data: sdkMessage,
-        sessionId: session.id,
+        sessionId: sdkSessionId || sessionId,
       };
       res.write(`data: ${JSON.stringify(event)}\n\n`);
 
       // Also log formatted text for debugging
       const formatted = formatMessage(sdkMessage);
       if (formatted) {
-        res.write(`data: ${JSON.stringify({ type: "text", content: formatted, sessionId: session.id })}\n\n`);
+        res.write(`data: ${JSON.stringify({ type: "text", content: formatted, sessionId: sdkSessionId || sessionId })}\n\n`);
       }
     }
 
-    res.write(`data: ${JSON.stringify({ type: "done", sessionId: session.id })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: "done", sessionId: sdkSessionId || sessionId })}\n\n`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     res.write(
-      `data: ${JSON.stringify({ type: "error", error: errorMessage, sessionId: session.id })}\n\n`
+      `data: ${JSON.stringify({ type: "error", error: errorMessage, sessionId: sdkSessionId || sessionId })}\n\n`
     );
   } finally {
     res.end();
