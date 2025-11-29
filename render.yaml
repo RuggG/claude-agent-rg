@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: claude-agent-api
+    runtime: docker
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AGENT_API_KEY
+        sync: false
+      - key: PORT
+        value: "3000"
