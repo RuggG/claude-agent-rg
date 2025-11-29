@@ -40,7 +40,6 @@ export async function* runAgent(
   const agentOptions: Options = {
     systemPrompt: options.systemPrompt || DEFAULT_SYSTEM_PROMPT,
     permissionMode: "bypassPermissions",
-    allowDangerouslySkipPermissions: true, // Required for Docker deployments
     mcpServers: Object.keys(mcpServers).length > 0 ? mcpServers : undefined,
     model: options.model,
     maxTurns: options.maxTurns || 30,
@@ -48,6 +47,14 @@ export async function* runAgent(
     includePartialMessages: true, // Enable real-time token streaming
     cwd: options.cwd || process.cwd(),
     resume: options.sessionId, // Resume from previous session if provided
+    // Pass environment variables to the spawned Claude Code process
+    // IS_SANDBOX=1 allows bypassPermissions mode in Docker (running as root)
+    env: {
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
+      PATH: process.env.PATH || "",
+      NODE_PATH: process.env.NODE_PATH || "",
+      IS_SANDBOX: "1",
+    },
     stderr: (data: string) => {
       console.error(`[SDK stderr] ${data.trim()}`);
     },
