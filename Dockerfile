@@ -1,10 +1,9 @@
 FROM node:20-slim
 
-# Install required tools for Claude Agent SDK (git, ripgrep for Grep tool, curl)
+# Install required tools (git for version control operations)
+# Note: ripgrep is bundled in @anthropic-ai/claude-agent-sdk/vendor/ripgrep/
 RUN apt-get update && apt-get install -y \
     git \
-    ripgrep \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
