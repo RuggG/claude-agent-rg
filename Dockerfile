@@ -25,6 +25,9 @@ RUN npm run build
 # Remove devDependencies after build
 RUN npm prune --production
 
+# Create .claude config directory that SDK might need
+RUN mkdir -p /app/.claude && chmod 755 /app/.claude
+
 # Set environment
 ENV NODE_ENV=production
 ENV PORT=10000
